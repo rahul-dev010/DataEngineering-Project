@@ -1,0 +1,108 @@
+# --------------------your JOb
+resources:
+  jobs:
+    Sales_ETL_Pipeline_DE_Pro:
+      name: Sales ETL Pipeline DE Pro
+      tasks:
+        - task_key: Bronze_customer
+          notebook_task:
+            notebook_path: /Workspace/Users/rahulpatel@cyntexa.com/DataEngineering-Project/de_project/src/bronze/load_customers
+            source: WORKSPACE
+        - task_key: Bronze_products
+          notebook_task:
+            notebook_path: /Workspace/Users/rahulpatel@cyntexa.com/DataEngineering-Project/de_project/src/bronze/load_products
+            source: WORKSPACE
+        - task_key: Bronze_sales
+          notebook_task:
+            notebook_path: /Workspace/Users/rahulpatel@cyntexa.com/DataEngineering-Project/de_project/src/bronze/load_sales
+            source: WORKSPACE
+        - task_key: bronze_supplier
+          notebook_task:
+            notebook_path: /Workspace/Users/rahulpatel@cyntexa.com/DataEngineering-Project/de_project/src/bronze/load_suppliers
+            source: WORKSPACE
+        - task_key: silver_customer
+          depends_on:
+            - task_key: Bronze_customer
+          notebook_task:
+            notebook_path: /Workspace/Users/rahulpatel@cyntexa.com/DataEngineering-Project/de_project/src/silver/customers_clean
+            source: WORKSPACE
+        - task_key: silver_products
+          depends_on:
+            - task_key: Bronze_products
+          notebook_task:
+            notebook_path: /Workspace/Users/rahulpatel@cyntexa.com/DataEngineering-Project/de_project/src/silver/products_clean
+            source: WORKSPACE
+        - task_key: silver_sales
+          depends_on:
+            - task_key: Bronze_sales
+            - task_key: Bronze_customer
+            - task_key: Bronze_products
+            - task_key: bronze_supplier
+          notebook_task:
+            notebook_path: /Workspace/Users/rahulpatel@cyntexa.com/DataEngineering-Project/de_project/src/silver/sales_clean
+            source: WORKSPACE
+        - task_key: gold_customer_matrix
+          depends_on:
+            - task_key: silver_customer
+            - task_key: silver_sales
+          notebook_task:
+            notebook_path: /Workspace/Users/rahulpatel@cyntexa.com/DataEngineering-Project/de_project/src/Gold/Customer
+              Analytics
+            source: WORKSPACE
+        - task_key: gold_sales_performance
+          depends_on:
+            - task_key: silver_customer
+            - task_key: silver_products
+            - task_key: silver_sales
+          notebook_task:
+            notebook_path: /Workspace/Users/rahulpatel@cyntexa.com/DataEngineering-Project/de_project/src/Gold/Sales
+              Performance Metrics
+            source: WORKSPACE
+        - task_key: gold_trend_analysis
+          depends_on:
+            - task_key: silver_sales
+          notebook_task:
+            notebook_path: /Workspace/Users/rahulpatel@cyntexa.com/DataEngineering-Project/de_project/src/Gold/Trend
+              Analysis
+            source: WORKSPACE
+        - task_key: silver_supplier
+          depends_on:
+            - task_key: bronze_supplier
+          notebook_task:
+            notebook_path: /Workspace/Users/rahulpatel@cyntexa.com/DataEngineering-Project/de_project/src/silver/suppliers_clean
+            source: WORKSPACE
+          environment_key: Default
+        - task_key: gold_product_analytics
+          depends_on:
+            - task_key: silver_products
+            - task_key: silver_sales
+            - task_key: silver_supplier
+          notebook_task:
+            notebook_path: /Workspace/Users/rahulpatel@cyntexa.com/DataEngineering-Project/de_project/src/Gold/Product
+              Performance
+            source: WORKSPACE
+        - task_key: Retail_Sales_Analytics_Dashboard_refresh
+          depends_on:
+            - task_key: gold_customer_matrix
+            - task_key: gold_sales_performance
+            - task_key: gold_trend_analysis
+            - task_key: gold_product_analytics
+          dashboard_task:
+            subscription:
+              subscribers:
+                - user_name: rahulpatel@cyntexa.com
+              paused: false
+              custom_subject: rahulpatel@cyntexa.com
+            warehouse_id: 933ecd839574cf8e
+            dashboard_id: 01f19178b51711e1a67ade58bbf91efe
+      queue:
+        enabled: true
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+      environments:
+        - environment_key: Default
+          spec:
+            environment_version: "5"
+      performance_target: PERFORMANCE_OPTIMIZED
+
